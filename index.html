@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ChiHao ⚡️ Supreme AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ================= CSS CHUNG ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Quicksand', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
+        body { background: #09090b; color: #fff; min-height: 100vh; display: flex; overflow: hidden; }
+        
+        :root {
+            --bg-panel: rgba(20, 20, 28, 0.85);
+            --bg-input: rgba(0, 0, 0, 0.4);
+            --primary: #ff8c00;
+            --grad-primary: linear-gradient(135deg, #ff8c00, #ff2a00);
+            --text-sub: #a0a0b0;
+            --border-light: rgba(255, 255, 255, 0.08);
+            --color-win: #00ff88;
+            --color-lose: #ff3333;
+        }
+
+        /* ================= BỐ CỤC (LAYOUT) ================= */
+        .app-wrapper { display: flex; width: 100%; height: 100vh; }
+        
+        /* Sidebar (Desktop) / Bottom Nav (Mobile) */
+        .sidebar { width: 260px; background: var(--bg-panel); backdrop-filter: blur(20px); border-right: 1px solid var(--border-light); display: flex; flex-direction: column; padding: 20px; z-index: 100; }
+        .brand { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: 900; text-align: center; margin-bottom: 30px; background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .nav-item { background: none; border: none; color: var(--text-sub); padding: 12px 15px; border-radius: 10px; font-weight: 800; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-item.active { background: var(--grad-primary); color: #fff; }
+        
+        .user-profile { background: var(--bg-input); padding: 15px; border-radius: 15px; display: flex; align-items: center; gap: 10px; margin-top: auto; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--grad-primary); display: flex; align-items: center; justify-content: center; font-weight: 900; }
+        .u-info h4 { font-size: 0.9rem; } .u-info p { font-size: 0.8rem; color: var(--color-win); font-weight: 800; }
+        .btn-logout { background: rgba(255,51,51,0.2); color: #ff3333; border: 1px solid #ff3333; width: 100%; padding: 10px; border-radius: 10px; font-weight: 800; cursor: pointer; margin-top: 15px; }
+
+        /* Main Content */
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+
+        /* ================= SCREENS & TABS ================= */
+        .screen { display: none; width: 100%; height: 100%; }
+        .screen.active { display: block; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ================= FORM ĐĂNG NHẬP ================= */
+        .auth-box { background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 20px; padding: 30px; max-width: 400px; margin: 50px auto; text-align: center; }
+        .auth-box h2 { font-family: 'Orbitron'; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 0.9rem; color: var(--text-sub); margin-bottom: 5px; font-weight: 800; }
+        .form-input { width: 100%; padding: 15px; background: var(--bg-input); border: 2px solid var(--border-light); border-radius: 10px; color: #fff; font-size: 1rem; font-weight: 700; }
+        .form-input:focus { border-color: var(--primary); }
+        .btn-submit { background: var(--grad-primary); color: #fff; width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 900; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
+        .error-msg { color: #ff3333; font-weight: 800; margin-top: 10px; display: none; }
+
+        /* PIN */
+        .pin-group { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .pin-box { width: 45px; height: 55px; text-align: center; font-size: 1.5rem; font-weight: 900; background: var(--bg-input); border: 2px solid var(--border-light); border-radius: 10px; color: #fff; }
+
+        /* ================= GAME UI ================= */
+        .game-header { margin-bottom: 15px; font-family: 'Orbitron'; font-size: 1.3rem; }
+        
+        /* Bảng Cầu */
+        .history-board { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: var(--bg-input); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); min-height: 80px; margin-bottom: 20px; }
+        .node { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; color: #fff; }
+        .node.empty { background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.2); }
+        .node.b { background: #ff3333; } .node.p { background: #3388ff; } .node.t { background: #33cc33; }
+        .node.tai { background: #111; border: 1px solid #555; } .node.xiu { background: #fff; color: #000; }
+
+        /* Bảng Điều Khiển */
+        .control-panel { background: var(--bg-panel); padding: 20px; border-radius: 15px; border: 1px solid var(--border-light); }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn-input { padding: 15px 0; border: none; border-radius: 10px; font-size: 1.3rem; font-weight: 900; color: #fff; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5); }
+        .btn-input:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.5); }
+        .btn-b { background: #cc0000; } .btn-p { background: #005ce6; } .btn-t { background: #00b300; }
+        .btn-tai { background: #222; border: 1px solid #555; } .btn-xiu { background: #ddd; color: #000; }
+        .btn-undo { background: #666; }
+        .btn-analyze { width: 100%; padding: 15px; background: var(--grad-primary); color: #fff; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+
+        /* Loading & Result */
+        .loading-box { display: none; margin-top: 15px; text-align: center; }
+        .loading-text { color: var(--primary); font-weight: 800; margin-bottom: 5px; }
+        .progress-bg { height: 10px; background: #333; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.1s; }
+
+        .result-box { display: none; background: var(--bg-input); border: 2px solid var(--primary); border-radius: 15px; padding: 20px; margin-top: 20px; text-align: center; }
+        .pred-title { font-family: 'Orbitron'; font-size: 2.5rem; font-weight: 900; margin: 10px 0; }
+        .pred-b { color: #ff3333; } .pred-p { color: #3388ff; }
+        .pred-tai { background: #000; border: 1px solid #333; padding: 5px 20px; border-radius: 10px; display: inline-block; }
+        .pred-xiu { background: #fff; color: #000; padding: 5px 20px; border-radius: 10px; display: inline-block; }
+        
+        .ai-details { display: none; max-height: 150px; overflow-y: auto; text-align: left; font-size: 0.85rem; margin-top: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; }
+        .ai-row { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
+
+        .sync-area { margin-top: 15px; border-top: 1px dashed #444; padding-top: 15px; }
+        .sync-grid { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .sync-msg { font-weight: 900; font-size: 1.2rem; margin-top: 10px; }
+
+        /* ================= ADMIN UI ================= */
+        .data-card { background: var(--bg-input); border: 1px solid var(--border-light); padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .data-info { display: flex; flex-direction: column; }
+        .data-name { font-weight: 800; } .data-sub { font-size: 0.8rem; color: var(--primary); font-weight: 700; }
+        .swatch-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px; }
+        .swatch { aspect-ratio: 1; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .swatch.active { border-color: #fff; }
+        .bg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .bg-thumb { height: 50px; border-radius: 8px; cursor: pointer; background-size: cover; background-position: center; border: 2px solid transparent; }
+        .bg-thumb.active { border-color: var(--primary); }
+
+        /* ================= MOBILE RESPONSIVE ================= */
+        @media (max-width: 768px) {
+            .app-wrapper { flex-direction: column; }
+            .sidebar { position: fixed; bottom: 0; left: 0; width: 100%; height: 65px; flex-direction: row; padding: 0; border-right: none; border-top: 1px solid var(--border-light); border-radius: 15px 15px 0 0; background: rgba(15,15,19,0.95); }
+            .brand, .user-profile, .btn-logout { display: none; }
+            .nav-menu { flex-direction: row; justify-content: space-around; width: 100%; padding: 0 5px; }
+            .nav-item { flex-direction: column; padding: 8px; font-size: 0.7rem; gap: 3px; flex: 1; text-align: center; }
+            .nav-item i { font-size: 1.2rem; }
+            .nav-item.active { background: transparent; color: var(--primary); box-shadow: none; }
+            .main-content { padding: 15px; padding-bottom: 80px; height: calc(100vh - 65px); }
+            .history-board { padding: 10px; gap: 6px; }
+            .node { width: 40px; height: 40px; font-size: 1.1rem; border-radius: 8px; }
+            .btn-input { padding: 12px 0; font-size: 1.1rem; }
+            .pred-title { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <!-- SIDEBAR / BOTTOM NAV -->
+        <aside class="sidebar" id="sidebar" style="display:none;">
+            <div class="brand">ChiHao ⚡️</div>
+            
+            <div class="nav-menu" id="nav-admin">
+                <button class="nav-item active" data-tab="admin-bcr"><i class="fas fa-dice"></i> Baccarat</button>
+                <button class="nav-item" data-tab="admin-tx"><i class="fas fa-dice-d6"></i> Tài Xỉu</button>
+                <button class="nav-item" data-tab="admin-acc"><i class="fas fa-users"></i> Kho Acc</button>
+                <button class="nav-item" data-tab="admin-his"><i class="fas fa-history"></i> Lịch Sử</button>
+                <button class="nav-item" data-tab="admin-sys"><i class="fas fa-cogs"></i> Hệ Thống</button>
+            </div>
+
+            <div class="nav-menu" id="nav-user" style="display:none;">
+                <button class="nav-item active" data-tab="user-bcr"><i class="fas fa-dice"></i> Baccarat</button>
+                <button class="nav-item" data-tab="user-tx"><i class="fas fa-dice-d6"></i> Tài Xỉu</button>
+            </div>
+
+            <div class="user-profile">
+                <div class="avatar" id="p-avt">🛡️</div>
+                <div class="u-info">
+                    <h4 id="p-name">Admin</h4>
+                    <p id="p-coins">Vô Hạn</p>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="Auth.logout()">Đăng Xuất</button>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            
+            <!-- 1. LOGIN -->
+            <div id="screen-login" class="screen active">
+                <div class="auth-box">
+                    <h2>Đăng Nhập</h2>
+                    <div class="form-group">
+                        <label>Tên đăng nhập</label>
+                        <input type="text" id="login-user" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu</label>
+                        <input type="password" id="login-pass" class="form-input">
+                    </div>
+                    <button class="btn-submit" onclick="Auth.check()">Tiếp Tục</button>
+                    <div id="login-err" class="error-msg">Sai tài khoản hoặc mật khẩu!</div>
+                </div>
+            </div>
+
+            <!-- 2. PIN -->
+            <div id="screen-pin" class="screen">
+                <div class="auth-box">
+                    <h2>Xác Thực Admin</h2>
+                    <div class="pin-group">
+                        <input type="tel" maxlength="1" class="pin-box" data-idx="0">
+                        <input type="tel" maxlength="1" class="pin-box" data-idx="1">
+                        <input type="tel" maxlength="1" class="pin-box" data-idx="2">
+                        <input type="tel" maxlength="1" class="pin-box" data-idx="3">
+                        <input type="tel" maxlength="1" class="pin-box" data-idx="4">
+                        <input type="tel" maxlength="1" class="pin-box" data-idx="5">
+                    </div>
+                    <button class="btn-submit" onclick="Auth.verifyPin()">Xác Nhận</button>
+                    <div id="pin-err" class="error-msg">Mã PIN không đúng!</div>
+                </div>
+            </div>
+
+            <!-- 3. DASHBOARD -->
+            <div id="screen-dash" class="screen">
+                
+                <!-- ADMIN: BACCARAT -->
+                <div id="tab-admin-bcr" class="tab-pane active">
+                    <div class="game-header">Baccarat (15 AI)</div>
+                    <div class="history-board" id="hist-admin-bcr"></div>
+                    <div class="control-panel">
+                        <div class="grid-4">
+                            <button class="btn-input btn-b" onclick="Game.add('bcr', 'B', false)">B</button>
+                            <button class="btn-input btn-p" onclick="Game.add('bcr', 'P', false)">P</button>
+                            <button class="btn-input btn-t" onclick="Game.add('bcr', 'T', false)">T</button>
+                            <button class="btn-input btn-undo" onclick="Game.undo('bcr', false)">⌫</button>
+                        </div>
+                        <button class="btn-analyze" onclick="Game.run('bcr', false)">Phân Tích</button>
+                    </div>
+                    <div class="loading-box" id="load-admin-bcr">
+                        <div class="loading-text" id="txt-admin-bcr">0%</div>
+                        <div class="progress-bg"><div class="progress-fill" id="bar-admin-bcr"></div></div>
+                    </div>
+                    <div class="result-box" id="res-admin-bcr">
+                        <div>Dự đoán:</div>
+                        <div class="pred-title" id="pred-admin-bcr">-</div>
+                        <button class="btn-undo" style="width:100%; padding:8px; margin-bottom:10px;" onclick="Game.toggleList('bcr', false)">Chi tiết AI</button>
+                        <div class="ai-details" id="list-admin-bcr"></div>
+                        <div class="sync-area">
+                            <div>Kết quả thực tế:</div>
+                            <div class="sync-grid">
+                                <button class="btn-input btn-b" style="width:60px;" onclick="Game.sync('bcr', 'B', false)">B</button>
+                                <button class="btn-input btn-p" style="width:60px;" onclick="Game.sync('bcr', 'P', false)">P</button>
+                            </div>
+                            <div class="sync-msg" id="msg-admin-bcr"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN: TAI XIU -->
+                <div id="tab-admin-tx" class="tab-pane">
+                    <div class="game-header">Tài Xỉu (15 AI)</div>
+                    <div class="history-board" id="hist-admin-tx"></div>
+                    <div class="control-panel">
+                        <div class="grid-2">
+                            <button class="btn-input btn-tai" onclick="Game.add('tx', 'T', false)">TÀI</button>
+                            <button class="btn-input btn-xiu" onclick="Game.add('tx', 'X', false)">XỈU</button>
+                        </div>
+                        <button class="btn-input btn-undo" style="width:100%; margin-bottom:10px;" onclick="Game.undo('tx', false)">⌫ Xóa</button>
+                        <button class="btn-analyze" onclick="Game.run('tx', false)">Phân Tích</button>
+                    </div>
+                    <div class="loading-box" id="load-admin-tx">
+                        <div class="loading-text" id="txt-admin-tx">0%</div>
+                        <div class="progress-bg"><div class="progress-fill" id="bar-admin-tx"></div></div>
+                    </div>
+                    <div class="result-box" id="res-admin-tx">
+                        <div>Dự đoán:</div>
+                        <div class="pred-title" id="pred-admin-tx">-</div>
+                        <button class="btn-undo" style="width:100%; padding:8px; margin-bottom:10px;" onclick="Game.toggleList('tx', false)">Chi tiết AI</button>
+                        <div class="ai-details" id="list-admin-tx"></div>
+                        <div class="sync-area">
+                            <div>Kết quả thực tế:</div>
+                            <div class="sync-grid">
+                                <button class="btn-input btn-tai" style="width:80px;" onclick="Game.sync('tx', 'T', false)">TÀI</button>
+                                <button class="btn-input btn-xiu" style="width:80px;" onclick="Game.sync('tx', 'X', false)">XỈU</button>
+                            </div>
+                            <div class="sync-msg" id="msg-admin-tx"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN: ACCOUNTS -->
+                <div id="tab-admin-acc" class="tab-pane">
+                    <div class="game-header">Quản Lý Tài Khoản</div>
+                    <div class="control-panel" style="margin-bottom:15px;">
+                        <input type="text" id="new-u" class="form-input" placeholder="Tên..." style="margin-bottom:10px;">
+                        <input type="text" id="new-p" class="form-input" placeholder="Pass..." style="margin-bottom:10px;">
+                        <input type="number" id="new-c" class="form-input" placeholder="Số xu..." style="margin-bottom:10px;">
+                        <button class="btn-analyze" onclick="Admin.create()">Tạo User</button>
+                    </div>
+                    <div class="control-panel">
+                        <input type="text" id="give-u" class="form-input" placeholder="Tên..." style="margin-bottom:10px;">
+                        <input type="number" id="give-c" class="form-input" placeholder="Số xu..." style="margin-bottom:10px;">
+                        <button class="btn-analyze" onclick="Admin.give()">Cấp Xu</button>
+                    </div>
+                    <div id="acc-list" style="margin-top:15px;"></div>
+                </div>
+
+                <!-- ADMIN: HISTORY -->
+                <div id="tab-admin-his" class="tab-pane">
+                    <div class="game-header">Lịch Sử</div>
+                    <div id="his-list"></div>
+                </div>
+
+                <!-- ADMIN: SETTINGS -->
+                <div id="tab-admin-sys" class="tab-pane">
+                    <div class="game-header">Hệ Thống</div>
+                    <div class="control-panel" style="margin-bottom:15px;">
+                        <input type="text" id="set-m-title" class="form-input" placeholder="Tên nhạc..." style="margin-bottom:10px;">
+                        <input type="text" id="set-m-src" class="form-input" placeholder="Link MP3..." style="margin-bottom:10px;">
+                        <button class="btn-analyze" onclick="Audio.save()">Lưu Nhạc</button>
+                    </div>
+                    <div class="control-panel">
+                        <div>Màu sắc:</div>
+                        <div class="swatch-grid" id="sw-themes"></div>
+                        <div>Hình nền:</div>
+                        <div class="bg-grid" id="sw-bgs"></div>
+                    </div>
+                </div>
+
+                <!-- USER: BACCARAT -->
+                <div id="tab-user-bcr" class="tab-pane">
+                    <div class="game-header">Baccarat (Tốn 2 Xu)</div>
+                    <div class="history-board" id="hist-user-bcr"></div>
+                    <div class="control-panel">
+                        <div class="grid-4">
+                            <button class="btn-input btn-b" onclick="Game.add('bcr', 'B', true)">B</button>
+                            <button class="btn-input btn-p" onclick="Game.add('bcr', 'P', true)">P</button>
+                            <button class="btn-input btn-t" onclick="Game.add('bcr', 'T', true)">T</button>
+                            <button class="btn-input btn-undo" onclick="Game.undo('bcr', true)">⌫</button>
+                        </div>
+                        <button class="btn-analyze" onclick="Game.run('bcr', true)">Phân Tích</button>
+                    </div>
+                    <div class="loading-box" id="load-user-bcr">
+                        <div class="loading-text" id="txt-user-bcr">0%</div>
+                        <div class="progress-bg"><div class="progress-fill" id="bar-user-bcr"></div></div>
+                    </div>
+                    <div class="result-box" id="res-user-bcr">
+                        <div>Dự đoán:</div>
+                        <div class="pred-title" id="pred-user-bcr">-</div>
+                        <button class="btn-undo" style="width:100%; padding:8px; margin-bottom:10px;" onclick="Game.toggleList('bcr', true)">Chi tiết AI</button>
+                        <div class="ai-details" id="list-user-bcr"></div>
+                        <div class="sync-area">
+                            <div>Kết quả thực tế:</div>
+                            <div class="sync-grid">
+                                <button class="btn-input btn-b" style="width:60px;" onclick="Game.sync('bcr', 'B', true)">B</button>
+                                <button class="btn-input btn-p" style="width:60px;" onclick="Game.sync('bcr', 'P', true)">P</button>
+                            </div>
+                            <div class="sync-msg" id="msg-user-bcr"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- USER: TAI XIU -->
+                <div id="tab-user-tx" class="tab-pane">
+                    <div class="game-header">Tài Xỉu (Tốn 2 Xu)</div>
+                    <div class="history-board" id="hist-user-tx"></div>
+                    <div class="control-panel">
+                        <div class="grid-2">
+                            <button class="btn-input btn-tai" onclick="Game.add('tx', 'T', true)">TÀI</button>
+                            <button class="btn-input btn-xiu" onclick="Game.add('tx', 'X', true)">XỈU</button>
+                        </div>
+                        <button class="btn-input btn-undo" style="width:100%; margin-bottom:10px;" onclick="Game.undo('tx', true)">⌫ Xóa</button>
+                        <button class="btn-analyze" onclick="Game.run('tx', true)">Phân Tích</button>
+                    </div>
+                    <div class="loading-box" id="load-user-tx">
+                        <div class="loading-text" id="txt-user-tx">0%</div>
+                        <div class="progress-bg"><div class="progress-fill" id="bar-user-tx"></div></div>
+                    </div>
+                    <div class="result-box" id="res-user-tx">
+                        <div>Dự đoán:</div>
+                        <div class="pred-title" id="pred-user-tx">-</div>
+                        <button class="btn-undo" style="width:100%; padding:8px; margin-bottom:10px;" onclick="Game.toggleList('tx', true)">Chi tiết AI</button>
+                        <div class="ai-details" id="list-user-tx"></div>
+                        <div class="sync-area">
+                            <div>Kết quả thực tế:</div>
+                            <div class="sync-grid">
+                                <button class="btn-input btn-tai" style="width:80px;" onclick="Game.sync('tx', 'T', true)">TÀI</button>
+                                <button class="btn-input btn-xiu" style="width:80px;" onclick="Game.sync('tx', 'X', true)">XỈU</button>
+                            </div>
+                            <div class="sync-msg" id="msg-user-tx"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Âm thanh -->
+    <audio id="bgm" loop></audio>
+
+    <script>
+        // ==========================================
+        // QUẢN LÝ DỮ LIỆU & TRẠNG THÁI
+        // ==========================================
+        let State = {
+            accounts: JSON.parse(localStorage.getItem('accs_v16')) || [
+                { u: "chihaocute8386", p: "chihao2010", c: 999999999, r: "admin" }
+            ],
+            history: JSON.parse(localStorage.getItem('hist_v16')) || [],
+            sys: JSON.parse(localStorage.getItem('sys_v16')) || { theme: 'theme-1', bg: 'bg-1', music: 'nhac1.mp3' },
+            user: null,
+            tempUser: null,
+            game: { bcr: [], tx: [] },
+            pred: null
+        };
+
+        function save() {
+            localStorage.setItem('accs_v16', JSON.stringify(State.accounts));
+            localStorage.setItem('hist_v16', JSON.stringify(State.history));
+            localStorage.setItem('sys_v16', JSON.stringify(State.sys));
+        }
+
+        function alertBox(msg, isErr) {
+            const t = document.createElement('div');
+            t.innerText = msg;
+            t.style.cssText = `position:fixed;top:20px;left:50%;transform:translateX(-50%);background:${isErr?'#ff3333':'#00ff88'};color:${isErr?'#fff':'#000'};padding:10px 20px;border-radius:20px;font-weight:900;z-index:9999;`;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+
+        // ==========================================
+        // XÁC THỰC (AUTH)
+        // ==========================================
+        const Auth = {
+            check: () => {
+                let u = document.getElementById('login-user').value;
+                let p = document.getElementById('login-pass').value;
+                let acc = State.accounts.find(a => a.u === u && a.p === p);
+                if (acc) {
+                    State.tempUser = acc;
+                    if (acc.u === "chihaocute8386") {
+                        document.getElementById('screen-login').classList.remove('active');
+                        document.getElementById('screen-pin').classList.add('active');
+                    } else {
+                        Auth.loginSuccess(acc);
+                    }
+                } else {
+                    document.getElementById('login-err').style.display = 'block';
+                }
+            },
+            verifyPin: () => {
+                let inputs = document.querySelectorAll('.pin-box');
+                let pin = ""; inputs.forEach(i => pin += i.value);
+                if (pin === "168211") {
+                    Auth.loginSuccess(State.tempUser);
+                } else {
+                    document.getElementById('pin-err').style.display = 'block';
+                    inputs.forEach(i => i.value = '');
+                    inputs[0].focus();
+                }
+            },
+            loginSuccess: (acc) => {
+                State.user = acc;
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-dash').classList.add('active');
+                document.getElementById('sidebar').style.display = 'flex';
+                
+                if (acc.r === 'admin') {
+                    document.getElementById('nav-admin').style.display = 'flex';
+                    document.getElementById('nav-user').style.display = 'none';
+                    document.getElementById('p-name').innerText = acc.u;
+                    document.getElementById('p-coins').innerText = "Vô Hạn Xu";
+                    Admin.renderList(); Sys.renderSwatches();
+                    UI.switchTab('admin-bcr', document.querySelector('#nav-admin .nav-item'));
+                } else {
+                    document.getElementById('nav-admin').style.display = 'none';
+                    document.getElementById('nav-user').style.display = 'flex';
+                    document.getElementById('p-name').innerText = acc.u;
+                    document.getElementById('p-avt').innerText = "👤";
+                    Auth.updateCoins();
+                    UI.switchTab('user-bcr', document.querySelector('#nav-user .nav-item'));
+                }
+                State.game = { bcr: [], tx: [] };
+                Game.render('bcr', acc.r === 'admin');
+                Game.render('tx', acc.r === 'admin');
+            },
+            logout: () => {
+                State.user = null;
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-login').classList.add('active');
+                document.getElementById('sidebar').style.display = 'none';
+                document.getElementById('login-user').value = '';
+                document.getElementById('login-pass').value = '';
+            },
+            updateCoins: () => {
+                if(State.user) document.getElementById('p-coins').innerText = `💰 ${State.user.c} Xu`;
+            }
+        };
+
+        // ==========================================
+        // GIAO DIỆN (UI)
+        // ==========================================
+        const UI = {
+            switchTab: (tabId, btn) => {
+                let menu = btn.closest('.nav-menu');
+                menu.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+                document.getElementById('tab-' + tabId).classList.add('active');
+                if(tabId.includes('his')) UI.renderHistory();
+            }
+        };
+
+        // ==========================================
+        // QUẢN TRỊ (ADMIN)
+        // ==========================================
+        const Admin = {
+            renderList: () => {
+                let list = document.getElementById('acc-list'); list.innerHTML = '';
+                State.accounts.forEach((a, i) => {
+                    let div = document.createElement('div'); div.className = 'data-card';
+                    div.innerHTML = `<div class="data-info"><span class="data-name">${a.u}</span><span class="data-sub">💰 ${a.r==='admin'?'Vô hạn':a.c+' xu'}</span></div>
+                    ${a.u === "chihaocute8386" ? '' : `<button class="btn-logout" style="width:auto;padding:5px 10px;margin:0;" onclick="Admin.del(${i})">Xóa</button>`}`;
+                    list.appendChild(div);
+                });
+            },
+            create: () => {
+                let u = document.getElementById('new-u').value;
+                let p = document.getElementById('new-p').value;
+                let c = parseInt(document.getElementById('new-c').value) || 0;
+                if(!u || !p) return alertBox("Nhập thiếu!", true);
+                if(State.accounts.find(a => a.u === u)) return alertBox("Tên đã tồn tại!", true);
+                State.accounts.push({u, p, c, r: 'user'});
+                save(); Admin.renderList(); alertBox("Đã tạo User!");
+            },
+            give: () => {
+                let u = document.getElementById('give-u').value;
+                let c = parseInt(document.getElementById('give-c').value) || 0;
+                let acc = State.accounts.find(a => a.u === u);
+                if(acc) { acc.c += c; save(); Admin.renderList(); alertBox("Đã cấp xu!"); }
+                else alertBox("Không tìm thấy!", true);
+            },
+            del: (i) => {
+                if(confirm("Xóa tài khoản này?")) { State.accounts.splice(i, 1); save(); Admin.renderList(); }
+            }
+        };
+
+        // ==========================================
+        // HỆ THỐNG (SYS)
+        // ==========================================
+        const Sys = {
+            apply: () => { document.body.className = `${State.sys.theme} ${State.sys.bg}`; },
+            renderSwatches: () => {
+                let themes = document.getElementById('sw-themes'); themes.innerHTML = '';
+                let colors = ['#ff8c00','#00e5ff','#ff0055','#00ff88','#fceb00','#c700ff','#ff0044','#00ffcc','#ffffff','#ff6b00'];
+                colors.forEach((c, i) => {
+                    let sw = document.createElement('div'); sw.className = `swatch ${State.sys.theme === 'theme-'+(i+1)?'active':''}`;
+                    sw.style.background = c; sw.onclick = () => { State.sys.theme = 'theme-'+(i+1); save(); Sys.apply(); Sys.renderSwatches(); };
+                    themes.appendChild(sw);
+                });
+
+                let bgs = document.getElementById('sw-bgs'); bgs.innerHTML = '';
+                let bgImgs = [
+                    'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=200&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?q=80&w=200&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1628260412297-a3377e45006f?q=80&w=200&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=200&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1581833971358-2c5509b8c150?q=80&w=200&auto=format&fit=crop',
+                    'https://images.unsplash.com/photo-1542451313-32e813a2c221?q=80&w=200&auto=format&fit=crop'
+                ];
+                bgImgs.forEach((img, i) => {
+                    let div = document.createElement('div'); div.className = `bg-thumb ${State.sys.bg === 'bg-'+(i+1)?'active':''}`;
+                    div.style.backgroundImage = `url(${img})`; div.onclick = () => { State.sys.bg = 'bg-'+(i+1); save(); Sys.apply(); Sys.renderSwatches(); };
+                    bgs.appendChild(div);
+                });
+            }
+        };
+
+        // ==========================================
+        // GAME LOGIC (AI & SYNC)
+        // ==========================================
+        const Game = {
+            add: (type, val, isUser) => {
+                if (State.game[type].length >= 10) return alertBox("Tối đa 10 cầu!", true);
+                State.game[type].push(val);
+                Game.render(type, isUser);
+            },
+            undo: (type, isUser) => {
+                State.game[type].pop();
+                Game.render(type, isUser);
+            },
+            render: (type, isUser) => {
+                let board = document.getElementById(`hist-${isUser?'user':'admin'}-${type}`);
+                board.innerHTML = '';
+                State.game[type].forEach(v => {
+                    let d = document.createElement('div'); d.className = `node ${v.toLowerCase()}`; d.innerText = v; board.appendChild(d);
+                });
+                for(let i = State.game[type].length; i < 10; i++) {
+                    let d = document.createElement('div'); d.className = 'node empty'; board.appendChild(d);
+                }
+            },
+            run: (type, isUser) => {
+                if(State.game[type].length < 10) return alertBox("Nhập đủ 10 cầu!", true);
+                if(isUser && State.user.c < 2) return alertBox("Không đủ 2 xu!", true);
+                
+                if(isUser) { State.user.c -= 2; save(); Auth.updateCoins(); }
+
+                let prefix = isUser ? 'user-' : 'admin-';
+                let load = document.getElementById(`load-${prefix}${type}`);
+                let bar = document.getElementById(`bar-${prefix}${type}`);
+                let res = document.getElementById(`res-${prefix}${type}`);
+                
+                res.style.display = 'none'; load.style.display = 'block'; bar.style.width = '0%';
+                
+                let prog = 0;
+                let intv = setInterval(() => {
+                    prog += 2; bar.style.width = prog + '%';
+                    if(prog >= 100) {
+                        clearInterval(intv);
+                        setTimeout(() => {
+                            load.style.display = 'none';
+                            Game.aiLogic(type, isUser);
+                        }, 200);
+                    }
+                }, 40);
+            },
+            // ==========================================
+            // 15 CHIẾN THUẬT AI TỐI CAO
+            // ==========================================
+            aiLogic: (type, isUser) => {
+                let hist = State.game[type];
+                let isBCR = type === 'bcr';
+                let results = [];
+                
+                // Hàm hỗ trợ đếm số lượng
+                let count = (char) => hist.filter(x => x === char).length;
+                let last = hist[hist.length - 1];
+                
+                // 1. Trend Follower
+                if(isBCR) results.push(count('B') > count('P') + 2 ? 'B' : (count('P') > count('B') + 2 ? 'P' : last));
+                else results.push(count('T') > count('X') + 2 ? 'T' : (count('X') > count('T') + 2 ? 'X' : last));
+
+                // 2. Mean Reversion
+                if(isBCR) results.push(count('P') <= 3 ? 'P' : 'B');
+                else results.push(count('X') <= 3 ? 'X' : 'T');
+
+                // 3. Streak Buster (Bẻ bệt 3)
+                if(isBCR) results.push(last === 'B' ? 'P' : 'B');
+                else results.push(last === 'T' ? 'X' : 'T');
+
+                // 4. Streak Rider (Bám bệt 2)
+                results.push(last);
+
+                // 5. Pattern 1-1
+                if(isBCR) results.push(hist.slice(-4).join('') === 'BPBP' ? 'B' : (hist.slice(-4).join('') === 'PBPB' ? 'P' : 'B'));
+                else results.push(hist.slice(-4).join('') === 'TXTX' ? 'T' : (hist.slice(-4).join('') === 'XTXT' ? 'X' : 'T'));
+
+                // 6. Pattern 2-2
+                if(isBCR) results.push(hist.slice(-4).join('') === 'BBPP' ? 'B' : (hist.slice(-4).join('') === 'PPBB' ? 'P' : 'B'));
+                else results.push(hist.slice(-4).join('') === 'TTXX' ? 'T' : (hist.slice(-4).join('') === 'XXTT' ? 'X' : 'T'));
+
+                // 7. Fibonacci
+                let fSum = 0;
+                for(let i=Math.max(0, hist.length-3); i<hist.length; i++) fSum += (hist[i] === (isBCR?'B':'T') ? 1 : 2);
+                results.push(fSum % 2 === 0 ? (isBCR?'P':'X') : (isBCR?'B':'T'));
+
+                // 8. Martingale Logic
+                results.push(Math.random() > 0.5 ? last : (last === (isBCR?'B':'T') ? (isBCR?'P':'X') : (isBCR?'B':'T')));
+
+                // 9. Time-Based
+                results.push(new Date().getSeconds() % 2 === 0 ? (isBCR?'B':'T') : (isBCR?'P':'X'));
+
+                // 10. Banker Bias
+                if(isBCR) results.push('B');
+                else results.push('T');
+
+                // 11. Anti-Bias
+                if(isBCR) results.push('P');
+                else results.push('X');
+
+                // 12. Markov Chain (Dựa trên mẫu chuyển đổi đơn giản)
+                results.push(last === (isBCR?'B':'T') ? (isBCR?'P':'X') : (isBCR?'B':'T'));
+
+                // 13. Volatility
+                let swaps = 0;
+                for(let i=1; i<hist.length; i++) if(hist[i] !== hist[i-1]) swaps++;
+                results.push(swaps > 6 ? (Math.random()>0.5?(isBCR?'B':'T'):(isBCR?'P':'X')) : last);
+
+                // 14. Mirror
+                results.push(hist[hist.length-3] === (isBCR?'B':'T') ? (isBCR?'P':'X') : (isBCR?'B':'T'));
+
+                // 15. Ensemble (Tổng hợp)
+                let countB = results.filter(x => x === (isBCR?'B':'T')).length;
+                results.push(countB > 7 ? (isBCR?'B':'T') : (isBCR?'P':'X'));
+
+                // Chốt kết quả
+                let finalB = results.filter(x => x === (isBCR?'B':'T')).length;
+                let finalPred = finalB > 7 ? (isBCR?'B':'T') : (isBCR?'P':'X');
+                State.pred = finalPred;
+
+                // Render
+                let prefix = isUser ? 'user-' : '';
+                let predTxt = document.getElementById(`pred-${prefix}${type}`);
+                let resBox = document.getElementById(`res-${prefix}${type}`);
+                let list = document.getElementById(`list-${prefix}${type}`);
+
+                if(isBCR) {
+                    predTxt.innerText = finalPred === 'B' ? 'BANKER (B)' : 'PLAYER (P)';
+                    predTxt.className = `pred-title ${finalPred === 'B' ? 'pred-b' : 'pred-p'}`;
+                } else {
+                    predTxt.innerText = finalPred === 'T' ? 'TÀI' : 'XỈU';
+                    predTxt.className = `pred-title ${finalPred === 'T' ? 'pred-tai' : 'pred-xiu'}`;
+                }
+
+                resBox.style.display = 'block';
+                list.innerHTML = '';
+                results.forEach((r, i) => {
+                    let d = document.createElement('div'); d.className = 'ai-row';
+                    d.innerHTML = `<span>AI-${i+1<10?'0'+(i+1):i+1}</span><strong>${r}</strong>`;
+                    list.appendChild(d);
+                });
+                document.getElementById(`msg-${prefix}${type}`).innerText = '';
+            },
+            toggleList: (type, isUser) => {
+                let l = document.getElementById(`${isUser?'user-':''}list-${type}`);
+                l.style.display = l.style.display === 'block' ? 'none' : 'block';
+            },
+            sync: (type, actual, isUser) => {
+                if(!State.pred) return;
+                let prefix = isUser ? 'user-' : '';
+                let msg = document.getElementById(`msg-${prefix}${type}`);
+                let win = (actual === State.pred);
+
+                msg.innerText = win ? "🎉 CHÍNH XÁC!" : "❌ SAI RỒI!";
+                msg.style.color = win ? "#00ff88" : "#ff3333";
+
+                State.history.unshift({ time: new Date().toLocaleString(), game: type==='bcr'?'Baccarat':'Tài Xỉu', pred: State.pred, act: actual, win });
+                save();
+
+                State.game[type] = [];
+                Game.render(type, isUser);
+                State.pred = null;
+
+                setTimeout(() => { document.getElementById(`res-${prefix}${type}`).style.display = 'none'; }, 2000);
+            }
+        };
+
+        // Khởi tạo
+        Sys.apply();
+        document.getElementById('set-m-title').value = State.sys.music;
+        
+        // Bind Tab
+        document.querySelectorAll('.nav-item').forEach(btn => {
+            btn.onclick = function() { UI.switchTab(this.dataset.tab, this); };
+        });
+        
+        // Bind PIN
+        document.querySelectorAll('.pin-box').forEach(input => {
+            input.oninput = (e) => {
+                if(e.target.value.length === 1) {
+                    let idx = parseInt(e.target.dataset.idx);
+                    let next = document.querySelector(`.pin-box[data-idx="${idx+1}"]`);
+                    if(next) next.focus();
+                }
+            };
+        });
+    </script>
+</body>
+</html>
